@@ -7,41 +7,71 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HotelSchema_Lab12.Data;
 using HotelSchema_Lab12.Models;
+using HotelSchema_Lab12.Models.Interfaces;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HotelSchema_Lab12.Controllers
 {
-    public class RoomAmenitiesController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class RoomAmenitiesController : ControllerBase
     {
-        private readonly TestDbContext _context;
+        private readonly IRoomAmenity _RoomAmenity;
 
-        public RoomAmenitiesController(TestDbContext context)
+        public RoomAmenitiesController(IRoomAmenity r)
         {
-            _context = context;
+            _RoomAmenity = r;
         }
 
-        // GET: RoomAmenities
-        public async Task<IActionResult> Index()
+        // GET: api/RoomAmenities
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<RoomAmenity>>> GetRoomAmenities()
         {
-              return View(await _context.RoomAmenities.ToListAsync());
+            var list = await _RoomAmenity.GetRoomAmenities();
+            return Ok(list);
         }
+        //{
+        //    return View(await _context.RoomAmenities.ToListAsync());
+        //}
 
         // GET: RoomAmenities/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<RoomAmenity>> GetRoomAmenity(int? id)
         {
-            if (id == null || _context.RoomAmenities == null)
-            {
-                return NotFound();
-            }
+            RoomAmenity RoomAmenity = await _RoomAmenity.GetRoomAmenity(id);
+            return RoomAmenity;
 
-            var roomAmenity = await _context.RoomAmenities
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (roomAmenity == null)
-            {
-                return NotFound();
-            }
-
-            return View(roomAmenity);
         }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> PutRoomAmenity(int id, RoomAmenity roomAmenity)
+        {
+            if (id != roomAmenity.ID)
+            {
+                return BadRequest();
+            }
+            var updatedRoomAmenity = await _RoomAmenity.UpdateRoomAmenity(id, RoomAmenity);
+            return Ok(updatedRoomAmenity);
+        }
+        //{
+        //    if (id == null || _context.RoomAmenities == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var roomAmenity = await _context.RoomAmenities
+        //        .FirstOrDefaultAsync(m => m.ID == id);
+        //    if (roomAmenity == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return View(roomAmenity);
+        //}
 
         // GET: RoomAmenities/Create
         public IActionResult Create()
@@ -54,7 +84,10 @@ namespace HotelSchema_Lab12.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,RoomID")] RoomAmenity roomAmenity)
+        public async Task<ActionResult<RoomAmenity>> PostRoomAmenity(RoomAmenity roomAmenity)
+    {
+
+    }
         {
             if (ModelState.IsValid)
             {

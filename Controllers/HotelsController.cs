@@ -7,155 +7,58 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HotelSchema_Lab12.Data;
 using HotelSchema_Lab12.Models;
+using HotelSchema_Lab12.Models.Interfaces;
 
 namespace HotelSchema_Lab12.Controllers
 {
-    public class HotelsController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class HotelsController : ControllerBase
     {
-        private readonly TestDbContext _context;
+        private readonly IHotel _context;
 
-        public HotelsController(TestDbContext context)
+        public HotelsController(IHotel c)
         {
-            _context = context;
+            _context = c;
         }
 
-        // GET: Hotels
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Hotel>>> GetHotels()
         {
-              return View(await _context.Hotels.ToListAsync());
+            var list = await _context.GetHotels();
+            return list;
         }
 
-        // GET: Hotels/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<ActionResult<Hotel>> GetHotel(int id)
         {
-            if (id == null || _context.Hotels == null)
-            {
-                return NotFound();
-            }
-
-            var hotel = await _context.Hotels
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (hotel == null)
-            {
-                return NotFound();
-            }
-
-            return View(hotel);
+            Hotel hotel = await _context.GetHotel(id);
+            return hotel;
         }
 
-        // GET: Hotels/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+        [HttpPut("{id}")]
 
-        // POST: Hotels/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Name,streetAddress,City,State,Country,Phone")] Hotel hotel)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(hotel);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(hotel);
-        }
-
-        // GET: Hotels/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null || _context.Hotels == null)
-            {
-                return NotFound();
-            }
-
-            var hotel = await _context.Hotels.FindAsync(id);
-            if (hotel == null)
-            {
-                return NotFound();
-            }
-            return View(hotel);
-        }
-
-        // POST: Hotels/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,streetAddress,City,State,Country,Phone")] Hotel hotel)
+        public async Task<ActionResult> Create(int id, Hotel hotel)
         {
             if (id != hotel.ID)
             {
-                return NotFound();
+                return BadRequest();
             }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(hotel);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!HotelExists(hotel.ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(hotel);
+            var updatedHotel = await _context.UpdateHotel(id, hotel);
+            return Ok(updatedHotel);
         }
 
-        // GET: Hotels/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [HttpPost]
+        public async Task<ActionResult<Hotel>> UpdateHotel(Hotel hotel)
         {
-            if (id == null || _context.Hotels == null)
-            {
-                return NotFound();
-            }
-
-            var hotel = await _context.Hotels
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (hotel == null)
-            {
-                return NotFound();
-            }
-
-            return View(hotel);
+            await _context.Create(hotel);
+            return CreatedAtAction("GetHotel", new { id = hotel.ID }, hotel);
         }
 
-        // POST: Hotels/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Edit(int id)
         {
-            if (_context.Hotels == null)
-            {
-                return Problem("Entity set 'TestDbContext.Hotels'  is null.");
-            }
-            var hotel = await _context.Hotels.FindAsync(id);
-            if (hotel != null)
-            {
-                _context.Hotels.Remove(hotel);
-            }
-            
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool HotelExists(int id)
-        {
-          return _context.Hotels.Any(e => e.ID == id);
+            await _context.Delete(id);
+            return NoContent();
         }
     }
 }

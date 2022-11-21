@@ -38,6 +38,14 @@ namespace HotelSchema_Lab12.Data
                     Name = "Presidential Suite"
                 }
             );
+            modelBuilder.Entity<Amenity>().HasData(
+                new Amenity
+                {
+                    ID = 1,
+                    Name = "Hot Tub"
+                }
+            );
+
         }
     }
 }
