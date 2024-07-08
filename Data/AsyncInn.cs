@@ -27,7 +27,8 @@ namespace HotelSchema_Lab12.Data
                     Phone = "901-555-1999",
                     State = "TN",
                     City = "Memphis",
-                    streetAddress = "2014 Sam Cooper Blvd"
+                    streetAddress = "2014 Sam Cooper Blvd",
+                    Rating = "*****"
                 }
             );
             modelBuilder.Entity<Room>().HasData(
